@@ -2,14 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"log"
 	"os"
-	"regexp"
 	"time"
-
-	"github.com/charmbracelet/huh"
 )
 
 type Task struct {
@@ -18,11 +13,6 @@ type Task struct {
 	CreatedAt time.Time `json:"createdAt"`
 	DueAt     time.Time `json:"dueAt"`
 }
-
-var (
-	text    string
-	dueDate string
-)
 
 func (t Task) saveTask() {
 	// Creating file name from date created
@@ -61,42 +51,5 @@ func (t Task) saveTask() {
 		panic(writeErr)
 	}
 
-	fmt.Println("Task(s) saved to file:", path)
-}
-
-func handlePrompt() {
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewInput().
-				Title(
-					"Enter task text: e.g Complete chapter 8 of Learning Go by Jon Bodner",
-				).
-				CharLimit(100).
-				Value(&text).
-				Validate(func(desc string) error {
-					if desc == "" {
-						return errors.New("sorry, you need to enter the task description")
-					}
-					return nil
-				}),
-
-			huh.NewInput().
-				Title("When is it due? format: dd-mm-yyyy e.g 22-07-2024").
-				CharLimit(10).
-				Value(&dueDate).
-				Validate(func(date string) error {
-					dateFormat := regexp.MustCompile(`^\d{2}-\d{2}-\d{4}$`)
-					if !dateFormat.MatchString(date) {
-						return errors.New("sorry, format must be dd-mm-yyyy e.g 20-01-2024")
-					}
-					return nil
-				}),
-		),
-	)
-
-	err := form.Run()
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println("\nTask(s) saved to file:", path)
 }
