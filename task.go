@@ -1,55 +1,43 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
+	"database/sql"
 	"time"
 )
 
 type Task struct {
-	Completed bool      `json:"completed"`
-	Text      string    `json:"text"`
-	CreatedAt time.Time `json:"createdAt"`
-	DueAt     time.Time `json:"dueAt"`
+	Completed   bool
+	Description string
+	CreatedAt   time.Time
+	DueBy       time.Time
 }
 
-func (t Task) saveTask() {
-	// Creating file name from date created
-	formattedDate := t.CreatedAt.Format("02-01-2006 15:04:05")
-	path := fmt.Sprintf("./tasks/%v.json", formattedDate)
+type TaskRow struct {
+	Task
+	Id int
+}
 
-	// Creating "tasks" folder is it isn't created yet
-	err := os.MkdirAll("tasks", 0755)
+func (t Task) saveTask(db *sql.DB) TaskRow {
+	var taskRow TaskRow
+	row := db.QueryRow(`
+		INSERT INTO tasks(description, created_at, due_by, completed)
+		VALUES ($1, $2, $3, $4) 
+		RETURNING id, description, created_at, due_by, completed`, 
+		t.Description, t.CreatedAt, t.DueBy, false,
+	)
+
+	if row.Err() != nil {
+		panic(row.Err())
+	}
+
+	err := row.Scan(
+		&taskRow.Id, &taskRow.Description, &taskRow.CreatedAt,
+		&taskRow.DueBy, &taskRow.Completed,
+	)
 
 	if err != nil {
 		panic(err)
 	}
 
-	// Open file to write
-	f, openErr := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-
-	if openErr != nil {
-		fmt.Println("Path: ", path)
-		panic(openErr)
-	}
-
-	defer f.Close()
-
-	// Create json
-	b, jsonErr := json.Marshal(t)
-
-	if jsonErr != nil {
-		panic(jsonErr)
-	}
-
-	// Write json to file
-	_, writeErr := f.Write(b)
-
-	if writeErr != nil {
-		f.Close()
-		panic(writeErr)
-	}
-
-	fmt.Println("\nTask(s) saved to file:", path)
+	return taskRow
 }
