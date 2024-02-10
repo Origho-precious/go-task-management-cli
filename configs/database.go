@@ -24,14 +24,7 @@ func (cfg PostgresConfig) String() string {
 }
 
 func ConnectDB() (*sql.DB, error) {
-	cfg := PostgresConfig{
-		Host:     "localhost",
-		Port:     "5432",
-		User:     "pilolo",
-		Password: "sredev",
-		DbName:   "task-management-cli",
-		SSLMode:  "disable",
-	}
+	cfg := getEnv()
 
 	db, err := sql.Open("pgx", cfg.String())
 
