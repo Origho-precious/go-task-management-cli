@@ -1,21 +1,25 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"regexp"
 	"time"
 
+	"github.com/Origho-precious/go-task-management-cli/configs"
 	"github.com/charmbracelet/huh"
 )
 
 var (
-	text  string
-	date  string
-	dueAt time.Time
+	text    string
+	date    string
+	addMore string
+	DueBy   time.Time
 )
 
-func handlePrompt() {
+func handlePrompt(db *sql.DB) {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
@@ -47,10 +51,18 @@ func handlePrompt() {
 						return err
 					}
 
-					dueAt = fDueDate
+					DueBy = fDueDate
 
 					return nil
 				}),
+
+			huh.NewSelect[string]().
+				Title("Do you want to add more?").
+				Options(
+					huh.NewOption("yes", "yes"),
+					huh.NewOption("no", "no"),
+				).
+				Value(&addMore),
 		),
 	)
 
@@ -59,17 +71,66 @@ func handlePrompt() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	todo := Task{
+		Completed:   false,
+		Description: text,
+		CreatedAt:   time.Now(),
+		DueBy:       DueBy,
+	}
+
+	savedTask := todo.saveTask(db)
+
+	fmt.Printf("Taak(s) saved")
+	fmt.Printf("Description: %s, Due by: %s\n",
+		savedTask.Description, savedTask.DueBy,
+	)
+
+	if addMore == "yes" {
+		text = ""
+		handlePrompt(db)
+	}
 }
 
 func main() {
-	handlePrompt()
+	db, err := configs.ConnectDB()
 
-	todo := Task{
-		Completed: false,
-		Text:      text,
-		CreatedAt: time.Now(),
-		DueAt:     dueAt,
+	if err != nil {
+		panic(err)
 	}
 
-	todo.saveTask()
+	defer db.Close()
+
+	// Ping the database
+	err = db.Ping()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Database connection established!")
+
+	// Creating Tables
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS tasks(
+			id SERIAL PRIMARY KEY,
+			description TEXT NOT NULL,
+			created_at TIMESTAMP NOT NULL,
+			due_by TIMESTAMP NOT NULL,
+			completed BOOLEAN DEFAULT false
+		);
+	`)
+
+	// CREATE TABLE IF NOT EXISTS users(
+	// 		id SERIAL PRIMARY KEY,
+	// 		fullName TEXT NOT NULL,
+	// 		email TEXT UNIQUE NOT NULL,
+	// 		password TEXT NOT NULL
+	// 	);
+
+	if err != nil {
+		panic(err)
+	}
+
+	handlePrompt(db)
 }
