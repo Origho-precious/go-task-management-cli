@@ -19,6 +19,31 @@ var (
 	DueBy   time.Time
 )
 
+func getAction() (string, error) {
+	var action string
+
+	firstForm := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Choose one").
+				Options(
+					huh.NewOption("I want to view all my tasks", "view"),
+					huh.NewOption("I want to add new task(s)", "add"),
+					huh.NewOption("I want to mark task(s) as completed", "update"),
+					huh.NewOption("I want to delete task(s)", "delete"),
+				).
+				Value(&action),
+		),
+	)
+	err := firstForm.Run()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return action, err
+}
+
 func handlePrompt(db *sql.DB) {
 	form := huh.NewForm(
 		huh.NewGroup(
@@ -132,5 +157,43 @@ func main() {
 		panic(err)
 	}
 
-	handlePrompt(db)
+	action, actionErr := getAction()
+
+	if actionErr != nil {
+		panic(err)
+	}
+
+	switch action {
+	case "view":
+		tasks := showAllTasks(db)
+
+		// Print table header
+		fmt.Printf("%-5s%-11s%-20s%-12s%-12s\n",
+			"ID", "Completed", "Description", "CreatedAt", "DueBy",
+		)
+
+		// Print table rows
+		for _, task := range tasks {
+			completed := "false"
+
+			if task.Completed {
+				completed = "true"
+			}
+
+			fmt.Printf(
+				"%-5d%-11s%-20s%-12s%-12s\n",
+				task.Id, completed, task.Description,
+				task.CreatedAt.Format("02-01-2006"),
+				task.DueBy.Format("02-01-2006"),
+			)
+		}
+	case "add":
+		handlePrompt(db)
+	case "update":
+		// handlePrompt(db)
+	case "delete":
+		// handlePrompt(db)
+	default:
+		fmt.Println("Invalid action")
+	}
 }
