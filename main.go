@@ -44,6 +44,31 @@ func getAction() (string, error) {
 	return action, err
 }
 
+func handleView(db *sql.DB) {
+	tasks := showAllTasks(db)
+
+	// Print table header
+	fmt.Printf("%-5s%-11s%-20s%-12s%-12s\n",
+		"ID", "Completed", "Description", "CreatedAt", "DueBy",
+	)
+
+	// Print table rows
+	for _, task := range tasks {
+		completed := "false"
+
+		if task.Completed {
+			completed = "true"
+		}
+
+		fmt.Printf(
+			"%-5d%-11s%-20s%-12s%-12s\n",
+			task.Id, completed, task.Description,
+			task.CreatedAt.Format("02-01-2006"),
+			task.DueBy.Format("02-01-2006"),
+		)
+	}
+}
+
 func handlePrompt(db *sql.DB) {
 	form := huh.NewForm(
 		huh.NewGroup(
@@ -165,28 +190,7 @@ func main() {
 
 	switch action {
 	case "view":
-		tasks := showAllTasks(db)
-
-		// Print table header
-		fmt.Printf("%-5s%-11s%-20s%-12s%-12s\n",
-			"ID", "Completed", "Description", "CreatedAt", "DueBy",
-		)
-
-		// Print table rows
-		for _, task := range tasks {
-			completed := "false"
-
-			if task.Completed {
-				completed = "true"
-			}
-
-			fmt.Printf(
-				"%-5d%-11s%-20s%-12s%-12s\n",
-				task.Id, completed, task.Description,
-				task.CreatedAt.Format("02-01-2006"),
-				task.DueBy.Format("02-01-2006"),
-			)
-		}
+		handleView(db)
 	case "add":
 		handlePrompt(db)
 	case "update":
