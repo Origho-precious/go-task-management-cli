@@ -22,7 +22,7 @@ func (t Task) saveTask(db *sql.DB) TaskRow {
 	row := db.QueryRow(`
 		INSERT INTO tasks(description, created_at, due_by, completed)
 		VALUES ($1, $2, $3, $4) 
-		RETURNING id, description, created_at, due_by, completed`, 
+		RETURNING id, description, created_at, due_by, completed`,
 		t.Description, t.CreatedAt, t.DueBy, false,
 	)
 
@@ -40,4 +40,37 @@ func (t Task) saveTask(db *sql.DB) TaskRow {
 	}
 
 	return taskRow
+}
+
+func showAllTasks(db *sql.DB) []TaskRow {
+	var taskRows []TaskRow
+
+	rows, err := db.Query(`SELECT * FROM tasks`)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	for rows.Next() {
+		var taskRow TaskRow
+
+		err = rows.Scan(
+			&taskRow.Id, &taskRow.Description,
+			&taskRow.CreatedAt, &taskRow.DueBy, &taskRow.Completed,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+
+		taskRows = append(taskRows, taskRow)
+	}
+
+	if rows.Err() != nil {
+		panic(rows.Err())
+	}
+
+	return taskRows
 }
