@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/Origho-precious/go-task-management-cli/configs"
@@ -47,26 +48,7 @@ func getAction() (string, error) {
 func handleView(db *sql.DB) {
 	tasks := showAllTasks(db)
 
-	// Print table header
-	fmt.Printf("%-5s%-11s%-20s%-12s%-12s\n",
-		"ID", "Completed", "Description", "CreatedAt", "DueBy",
-	)
-
-	// Print table rows
-	for _, task := range tasks {
-		completed := "false"
-
-		if task.Completed {
-			completed = "true"
-		}
-
-		fmt.Printf(
-			"%-5d%-11s%-20s%-12s%-12s\n",
-			task.Id, completed, task.Description,
-			task.CreatedAt.Format("02-01-2006"),
-			task.DueBy.Format("02-01-2006"),
-		)
-	}
+	renderTasks(tasks)
 }
 
 func handlePrompt(db *sql.DB) {
@@ -142,6 +124,44 @@ func handlePrompt(db *sql.DB) {
 	}
 }
 
+func handleUpdate(db *sql.DB) {
+	tasks := showAllTasks(db)
+
+	var taskOptions []huh.Option[string]
+	for index, task := range tasks {
+		taskOption := huh.NewOption(fmt.Sprintf(
+			"#%d Description: %s", index+1, task.Description), strconv.Itoa(task.Id),
+		)
+		taskOptions = append(taskOptions, taskOption)
+	}
+
+	taskOptions = append(taskOptions, huh.NewOption("Go back", "back"))
+
+	var action string
+
+	taskForm := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Select task to mark as completed?").
+				Options(taskOptions...).
+				Value(&action),
+		),
+	)
+	err := taskForm.Run()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if action != "back" {
+		updatedTasks := markTaskAsCompleted(db, action)
+
+		renderTasks(updatedTasks)
+	} else {
+		// TODO: Go back to main meni
+	}
+}
+
 func main() {
 	db, err := configs.ConnectDB()
 
@@ -194,7 +214,7 @@ func main() {
 	case "add":
 		handlePrompt(db)
 	case "update":
-		// handlePrompt(db)
+		handleUpdate(db)
 	case "delete":
 		// handlePrompt(db)
 	default:
