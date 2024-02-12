@@ -51,8 +51,6 @@ func showAllTasks(db *sql.DB) []TaskRow {
 		panic(err)
 	}
 
-	defer db.Close()
-
 	for rows.Next() {
 		var taskRow TaskRow
 
@@ -73,4 +71,20 @@ func showAllTasks(db *sql.DB) []TaskRow {
 	}
 
 	return taskRows
+}
+
+func markTaskAsCompleted(db *sql.DB, id string) []TaskRow {
+	_, err := db.Exec(`
+		UPDATE tasks
+		SET completed = true
+		WHERE id = $1
+	`, id)
+
+	if err != nil {
+		panic(err)
+	}
+
+	updatedTasks := showAllTasks(db)
+
+	return updatedTasks
 }
