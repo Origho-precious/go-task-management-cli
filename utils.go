@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -72,4 +73,27 @@ func formatDueDate(dueDate string) (time.Time, error) {
 	)
 
 	return date, nil
+}
+
+func renderTasks(tasks []TaskRow) {
+	// Print table header
+	fmt.Printf("%-5s%-11s%-20s%-12s%-12s\n",
+		"ID", "Completed", "Description", "CreatedAt", "DueBy",
+	)
+
+	// Print table rows
+	for _, task := range tasks {
+		completed := "false"
+
+		if task.Completed {
+			completed = "true"
+		}
+
+		fmt.Printf(
+			"%-5d%-11s%-40s%-12s%-12s\n",
+			task.Id, completed, task.Description,
+			task.CreatedAt.Format("02-01-2006"),
+			task.DueBy.Format("02-01-2006"),
+		)
+	}
 }
