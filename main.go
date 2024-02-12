@@ -125,41 +125,47 @@ func handlePrompt(db *sql.DB) {
 }
 
 func handleUpdate(db *sql.DB) {
-	tasks := showAllTasks(db)
+	tasks := showUncompletedTasks(db)
 
-	var taskOptions []huh.Option[string]
-	for index, task := range tasks {
-		taskOption := huh.NewOption(fmt.Sprintf(
-			"#%d Description: %s", index+1, task.Description), strconv.Itoa(task.Id),
-		)
-		taskOptions = append(taskOptions, taskOption)
-	}
-
-	taskOptions = append(taskOptions, huh.NewOption("Go back", "back"))
-
-	var action string
-
-	taskForm := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("Select task to mark as completed?").
-				Options(taskOptions...).
-				Value(&action),
-		),
-	)
-	err := taskForm.Run()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if action != "back" {
-		updatedTasks := markTaskAsCompleted(db, action)
-
-		renderTasks(updatedTasks)
+	if len(tasks) == 0 {
+		fmt.Println("You have no uncompleted task, I commend your work rate!")
 	} else {
-		// TODO: Go back to main meni
+		var taskOptions []huh.Option[string]
+
+		for index, task := range tasks {
+			taskOption := huh.NewOption(fmt.Sprintf(
+				"#%d Description: %s", index+1, task.Description), strconv.Itoa(task.Id),
+			)
+			taskOptions = append(taskOptions, taskOption)
+		}
+
+		taskOptions = append(taskOptions, huh.NewOption("Go back", "back"))
+
+		var action string
+
+		taskForm := huh.NewForm(
+			huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("Select task to mark as completed?").
+					Options(taskOptions...).
+					Value(&action),
+			),
+		)
+		err := taskForm.Run()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if action != "back" {
+			updatedTasks := markTaskAsCompleted(db, action)
+
+			renderTasks(updatedTasks)
+		} else {
+			// TODO: Go back to main meni
+		}
 	}
+
 }
 
 func main() {

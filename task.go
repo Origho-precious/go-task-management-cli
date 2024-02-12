@@ -88,3 +88,37 @@ func markTaskAsCompleted(db *sql.DB, id string) []TaskRow {
 
 	return updatedTasks
 }
+
+func showUncompletedTasks(db *sql.DB) []TaskRow {
+	var taskRows []TaskRow
+
+	rows, err := db.Query(`
+		SELECT * FROM tasks
+		WHERE completed = false
+	`)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+		var taskRow TaskRow
+
+		err = rows.Scan(
+			&taskRow.Id, &taskRow.Description,
+			&taskRow.CreatedAt, &taskRow.DueBy, &taskRow.Completed,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+
+		taskRows = append(taskRows, taskRow)
+	}
+
+	if rows.Err() != nil {
+		panic(rows.Err())
+	}
+
+	return taskRows
+}
