@@ -1,6 +1,6 @@
 ### Project Overview:
 
-The **Go Task Management CLI** is a small personal project built with Go (Golang) aimed at providing a learning platform for Go developers. It utilizes the `huh` package for handling terminal forms and offers basic CRUD operations for managing tasks. The CLI allows users to add tasks with descriptions and due dates, mark tasks as completed, delete tasks, and exit the program seamlessly.
+The **Go Task Management CLI** is a small personal project built with Go (Golang) I built to learn Go (Golang). It utilizes the `huh` package for handling terminal forms and offers basic CRUD operations for managing tasks. The CLI allows users to add tasks with descriptions and due dates, mark tasks as completed, delete tasks, and exit the program seamlessly.
 
 ### Features:
 
