@@ -77,11 +77,11 @@ func formatDueDate(dueDate string) (time.Time, error) {
 
 func renderTasks(tasks []TaskRow) {
 	// Print table header
-	fmt.Printf("%-5s%-11s%-20s%-12s%-12s\n",
-		"ID", "Completed", "Description", "CreatedAt", "DueBy",
+	fmt.Printf("\n%-11s%-62s%-15s%-15s\n",
+		"Completed", "Description", "Due date", "Created At",
 	)
 
-	// Print table rows
+	// Print table body
 	for _, task := range tasks {
 		completed := "false"
 
@@ -90,10 +90,10 @@ func renderTasks(tasks []TaskRow) {
 		}
 
 		fmt.Printf(
-			"%-5d%-11s%-40s%-12s%-12s\n",
-			task.Id, completed, task.Description,
-			task.CreatedAt.Format("02-01-2006"),
+			"%-11s%-62s%-15s%-15s\n",
+			completed, task.Description,
 			task.DueBy.Format("02-01-2006"),
+			task.CreatedAt.Format("02-01-2006"),
 		)
 	}
 }
