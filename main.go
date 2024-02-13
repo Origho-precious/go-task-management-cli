@@ -286,13 +286,6 @@ func main() {
 		);
 	`)
 
-	// CREATE TABLE IF NOT EXISTS users(
-	// 		id SERIAL PRIMARY KEY,
-	// 		fullName TEXT NOT NULL,
-	// 		email TEXT UNIQUE NOT NULL,
-	// 		password TEXT NOT NULL
-	// 	);
-
 	if err != nil {
 		panic(err)
 	}
