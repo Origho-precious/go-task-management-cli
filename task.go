@@ -45,7 +45,7 @@ func (t Task) saveTask(db *sql.DB) TaskRow {
 func showAllTasks(db *sql.DB) []TaskRow {
 	var taskRows []TaskRow
 
-	rows, err := db.Query(`SELECT * FROM tasks`)
+	rows, err := db.Query("SELECT * FROM tasks")
 
 	if err != nil {
 		panic(err)
