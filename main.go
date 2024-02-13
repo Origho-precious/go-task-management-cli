@@ -58,7 +58,7 @@ func handlePrompt(db *sql.DB) {
 				Title(
 					"Enter task text: e.g Complete chapter 8 of Learning Go by Jon Bodner",
 				).
-				CharLimit(100).
+				CharLimit(60).
 				Value(&text).
 				Validate(func(desc string) error {
 					if desc == "" {
@@ -83,7 +83,7 @@ func handlePrompt(db *sql.DB) {
 						return err
 					}
 
-					DueBy = fDueDate
+					DueBy = fDueDate.AddDate(0, 0, -1)
 
 					return nil
 				}),
@@ -113,8 +113,9 @@ func handlePrompt(db *sql.DB) {
 
 	savedTask := todo.saveTask(db)
 
-	fmt.Printf("Taak(s) saved")
-	fmt.Printf("Description: %s, Due by: %s\n",
+	fmt.Println("Task saved")
+	fmt.Printf(
+		"Description: %s, Due by: %s\n",
 		savedTask.Description, savedTask.DueBy,
 	)
 
