@@ -6,19 +6,15 @@ import (
 )
 
 type Task struct {
+	Id          int
 	Completed   bool
 	Description string
 	CreatedAt   time.Time
 	DueBy       time.Time
 }
 
-type TaskRow struct {
-	Task
-	Id int
-}
-
-func (t Task) saveTask(db *sql.DB) TaskRow {
-	var taskRow TaskRow
+func (t Task) saveTask(db *sql.DB) Task {
+	var taskRow Task
 	row := db.QueryRow(`
 		INSERT INTO tasks(description, created_at, due_by, completed)
 		VALUES ($1, $2, $3, $4) 
@@ -42,8 +38,8 @@ func (t Task) saveTask(db *sql.DB) TaskRow {
 	return taskRow
 }
 
-func showAllTasks(db *sql.DB) []TaskRow {
-	var taskRows []TaskRow
+func showAllTasks(db *sql.DB) []Task {
+	var taskRows []Task
 
 	rows, err := db.Query("SELECT * FROM tasks")
 
@@ -52,7 +48,7 @@ func showAllTasks(db *sql.DB) []TaskRow {
 	}
 
 	for rows.Next() {
-		var taskRow TaskRow
+		var taskRow Task
 
 		err = rows.Scan(
 			&taskRow.Id, &taskRow.Description,
@@ -73,7 +69,7 @@ func showAllTasks(db *sql.DB) []TaskRow {
 	return taskRows
 }
 
-func markTaskAsCompleted(db *sql.DB, id string) []TaskRow {
+func markTaskAsCompleted(db *sql.DB, id string) []Task {
 	_, err := db.Exec(`
 		UPDATE tasks
 		SET completed = true
@@ -89,8 +85,8 @@ func markTaskAsCompleted(db *sql.DB, id string) []TaskRow {
 	return updatedTasks
 }
 
-func showUncompletedTasks(db *sql.DB) []TaskRow {
-	var taskRows []TaskRow
+func showUncompletedTasks(db *sql.DB) []Task {
+	var taskRows []Task
 
 	rows, err := db.Query(`
 		SELECT * FROM tasks
@@ -102,7 +98,7 @@ func showUncompletedTasks(db *sql.DB) []TaskRow {
 	}
 
 	for rows.Next() {
-		var taskRow TaskRow
+		var taskRow Task
 
 		err = rows.Scan(
 			&taskRow.Id, &taskRow.Description,
@@ -123,7 +119,7 @@ func showUncompletedTasks(db *sql.DB) []TaskRow {
 	return taskRows
 }
 
-func deleteTask(db *sql.DB, id string) []TaskRow {
+func deleteTask(db *sql.DB, id string) []Task {
 	_, err := db.Exec(`
 		DELETE FROM tasks
 		WHERE id = $1

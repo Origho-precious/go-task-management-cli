@@ -75,7 +75,7 @@ func formatDueDate(dueDate string) (time.Time, error) {
 	return date, nil
 }
 
-func renderTasks(tasks []TaskRow) {
+func renderTasks(tasks []Task) {
 	// Print table header
 	fmt.Printf("\n%-11s%-62s%-15s%-15s\n",
 		"Completed", "Description", "Due date", "Created At",
