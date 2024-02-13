@@ -47,9 +47,6 @@ The project comprises two main packages: `main` and `configs`. The `main` packag
 - PostgreSQL database connection is simplified with the `pgx` package.
 - Docker containers for PostgreSQL and Adminer facilitated easy database setup and management.
 
-### Contact Information:
-For any inquiries or support, please reach out via [GitHub](https://github.com/Origho-precious/go-task-management-cli).
-
 ### References:
 - [GitHub Repository](https://github.com/Origho-precious/go-task-management-cli)
 - [huh Package](https://github.com/charmbracelet/huh)
