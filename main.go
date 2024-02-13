@@ -50,7 +50,7 @@ func getAction(db *sql.DB) error {
 	case "update":
 		handleUpdate(db)
 	case "delete":
-		// handlePrompt(db)
+		handleDelete(db)
 	default:
 		fmt.Println("Invalid action")
 	}
@@ -147,8 +147,12 @@ func handleUpdate(db *sql.DB) {
 		var taskOptions []huh.Option[string]
 
 		for index, task := range tasks {
-			taskOption := huh.NewOption(fmt.Sprintf(
-				"#%d Description: %s", index+1, task.Description), strconv.Itoa(task.Id),
+			taskOption := huh.NewOption(
+				fmt.Sprintf(
+					"#%d Description: %s | Due date: %s", index+1,
+					task.Description, task.DueBy.Format("02-01-2006"),
+				),
+				strconv.Itoa(task.Id),
 			)
 			taskOptions = append(taskOptions, taskOption)
 		}
@@ -160,7 +164,7 @@ func handleUpdate(db *sql.DB) {
 		taskForm := huh.NewForm(
 			huh.NewGroup(
 				huh.NewSelect[string]().
-					Title("Select task to mark as completed?").
+					Title("Select task to mark as completed.").
 					Options(taskOptions...).
 					Value(&action),
 			),
@@ -174,6 +178,8 @@ func handleUpdate(db *sql.DB) {
 		if action != "back" {
 			updatedTasks := markTaskAsCompleted(db, action)
 
+			fmt.Println("Successful!")
+
 			renderTasks(updatedTasks)
 		} else {
 			err = getAction(db)
@@ -183,7 +189,61 @@ func handleUpdate(db *sql.DB) {
 			}
 		}
 	}
+}
 
+func handleDelete(db *sql.DB) {
+	tasks := showAllTasks(db)
+
+	if len(tasks) == 0 {
+		fmt.Println(
+			"You currently do not have any task. You can from the main menu",
+		)
+	} else {
+		var taskOptions []huh.Option[string]
+
+		for index, task := range tasks {
+			taskOption := huh.NewOption(
+				fmt.Sprintf(
+					"#%d Description: %s | Due date: %s", index+1,
+					task.Description, task.DueBy.Format("02-01-2006"),
+				),
+				strconv.Itoa(task.Id),
+			)
+			taskOptions = append(taskOptions, taskOption)
+		}
+
+		taskOptions = append(taskOptions, huh.NewOption("Go back", "back"))
+
+		var action string
+
+		taskForm := huh.NewForm(
+			huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("Select task you want to delete.").
+					Options(taskOptions...).
+					Value(&action),
+			),
+		)
+		err := taskForm.Run()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if action != "back" {
+			remainingTasks := deleteTask(db, action)
+
+			fmt.Println("Task deleted successfully!")
+
+			renderTasks(remainingTasks)
+		} else {
+			err = getAction(db)
+
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 }
 
 func main() {

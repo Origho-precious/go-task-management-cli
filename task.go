@@ -122,3 +122,18 @@ func showUncompletedTasks(db *sql.DB) []TaskRow {
 
 	return taskRows
 }
+
+func deleteTask(db *sql.DB, id string) []TaskRow {
+	_, err := db.Exec(`
+		DELETE FROM tasks
+		WHERE id = $1
+	`, id)
+
+	if err != nil {
+		panic(err)
+	}
+
+	remainingTasks := showAllTasks(db)
+
+	return remainingTasks
+}
