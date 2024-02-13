@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -32,6 +33,7 @@ func getAction(db *sql.DB) error {
 					huh.NewOption("I want to add new task(s)", "add"),
 					huh.NewOption("I want to mark task(s) as completed", "update"),
 					huh.NewOption("I want to delete task(s)", "delete"),
+					huh.NewOption("I want to exit the CLI", "close"),
 				).
 				Value(&action),
 		),
@@ -46,13 +48,14 @@ func getAction(db *sql.DB) error {
 	case "view":
 		handleView(db)
 	case "add":
-		handlePrompt(db)
+		handleAdd(db)
 	case "update":
 		handleUpdate(db)
 	case "delete":
 		handleDelete(db)
 	default:
-		fmt.Println("Invalid action")
+		fmt.Printf("You can restart the CLI by running %q\n", "go run .")
+		os.Exit(0)
 	}
 
 	return err
@@ -62,9 +65,11 @@ func handleView(db *sql.DB) {
 	tasks := showAllTasks(db)
 
 	renderTasks(tasks)
+
+	getAction(db)
 }
 
-func handlePrompt(db *sql.DB) {
+func handleAdd(db *sql.DB) {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
@@ -126,15 +131,21 @@ func handlePrompt(db *sql.DB) {
 
 	savedTask := todo.saveTask(db)
 
-	fmt.Println("Task saved")
+	fmt.Println("Task saved!")
 	fmt.Printf(
 		"Description: %s, Due by: %s\n",
-		savedTask.Description, savedTask.DueBy,
+		savedTask.Description, savedTask.DueBy.Format("02-01-2006"),
 	)
 
 	if addMore == "yes" {
 		text = ""
-		handlePrompt(db)
+		handleAdd(db)
+	} else {
+		err = getAction(db)
+
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -181,12 +192,12 @@ func handleUpdate(db *sql.DB) {
 			fmt.Println("Successful!")
 
 			renderTasks(updatedTasks)
-		} else {
-			err = getAction(db)
+		}
 
-			if err != nil {
-				log.Fatal(err)
-			}
+		err = getAction(db)
+
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 }
@@ -236,12 +247,12 @@ func handleDelete(db *sql.DB) {
 			fmt.Println("Task deleted successfully!")
 
 			renderTasks(remainingTasks)
-		} else {
-			err = getAction(db)
+		}
 
-			if err != nil {
-				log.Fatal(err)
-			}
+		err = getAction(db)
+
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 }
@@ -286,9 +297,9 @@ func main() {
 		panic(err)
 	}
 
-	actionErr := getAction(db)
+	err = getAction(db)
 
-	if actionErr != nil {
+	if err != nil {
 		panic(err)
 	}
 }
