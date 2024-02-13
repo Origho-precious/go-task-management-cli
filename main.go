@@ -20,7 +20,7 @@ var (
 	DueBy   time.Time
 )
 
-func getAction() (string, error) {
+func getAction(db *sql.DB) error {
 	var action string
 
 	firstForm := huh.NewForm(
@@ -42,7 +42,20 @@ func getAction() (string, error) {
 		log.Fatal(err)
 	}
 
-	return action, err
+	switch action {
+	case "view":
+		handleView(db)
+	case "add":
+		handlePrompt(db)
+	case "update":
+		handleUpdate(db)
+	case "delete":
+		// handlePrompt(db)
+	default:
+		fmt.Println("Invalid action")
+	}
+
+	return err
 }
 
 func handleView(db *sql.DB) {
@@ -163,7 +176,11 @@ func handleUpdate(db *sql.DB) {
 
 			renderTasks(updatedTasks)
 		} else {
-			// TODO: Go back to main meni
+			err = getAction(db)
+
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
@@ -209,22 +226,9 @@ func main() {
 		panic(err)
 	}
 
-	action, actionErr := getAction()
+	actionErr := getAction(db)
 
 	if actionErr != nil {
 		panic(err)
-	}
-
-	switch action {
-	case "view":
-		handleView(db)
-	case "add":
-		handlePrompt(db)
-	case "update":
-		handleUpdate(db)
-	case "delete":
-		// handlePrompt(db)
-	default:
-		fmt.Println("Invalid action")
 	}
 }
