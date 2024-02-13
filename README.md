@@ -55,5 +55,3 @@ For any inquiries or support, please reach out via [GitHub](https://github.com/O
 - [huh Package](https://github.com/charmbracelet/huh)
 - [pgx Package](https://github.com/jackc/pgx)
 - [Adminer](https://github.com/dockage/adminer)
-
-Feel free to customize this documentation further according to your needs!
