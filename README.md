@@ -56,7 +56,7 @@ The project comprises two main packages: `main` and `configs`. The `main` packag
 ### Usage:
 
 - Customize port settings and database credentials in the `docker-compose.yml` file.
-- Run the CLI using `go run main.go`.
+- Run the CLI using `go run .`.
 
 ### Known Issues/Limitations:
 
