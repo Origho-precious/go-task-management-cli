@@ -31,7 +31,7 @@ func getAction(db *sql.DB) error {
 				Options(
 					huh.NewOption("I want to view all my tasks", "view"),
 					huh.NewOption("I want to add new task(s)", "add"),
-					huh.NewOption("I want to mark task(s) as completed", "update"),
+					huh.NewOption("I want to mark a task as completed", "update"),
 					huh.NewOption("I want to delete task(s)", "delete"),
 					huh.NewOption("I want to exit the CLI", "close"),
 				).
@@ -206,9 +206,7 @@ func handleDelete(db *sql.DB) {
 	tasks := showAllTasks(db)
 
 	if len(tasks) == 0 {
-		fmt.Println(
-			"You currently do not have any task. You can from the main menu",
-		)
+		fmt.Println("You currently do not have any task.")
 	} else {
 		var taskOptions []huh.Option[string]
 
